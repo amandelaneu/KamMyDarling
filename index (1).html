@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>html,body{margin:0}body{-webkit-font-smoothing:antialiased}</style>
+<title>Hey bro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Cormorant+Garamond:ital,wght@0,400;1,400&display=swap">
+<style>
+/* Layout: one descending column of living script on a damp stone wall; the page scrolls like the stairway down. */
+:root {
+  --wall: #0b0d0a;
+  --wall-relief: #55604a;
+  --glow: #d6e48c;
+  --glow-deep: #7f9d3c;
+  --blue: #9ee2cc;
+  --spore: #f2f6cf;
+  --faint: #5c6650;
+  --font-script: "Pinyon Script", "Snell Roundhand", "Apple Chancery", cursive;
+  --font-mark: "Cormorant Garamond", Georgia, serif;
+  color-scheme: dark;
+}
+html, body { background-color: var(--wall); color: var(--glow); }
+body { background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22640%22%20height%3D%22640%22%3E%3Cfilter%20id%3D%22s%22%20x%3D%220%22%20y%3D%220%22%20width%3D%22100%25%22%20height%3D%22100%25%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%220.0125%200.0175%22%20numOctaves%3D%225%22%20seed%3D%227%22%20stitchTiles%3D%22stitch%22%20result%3D%22n%22/%3E%3CfeDiffuseLighting%20in%3D%22n%22%20surfaceScale%3D%225%22%20lighting-color%3D%22%2355604a%22%20diffuseConstant%3D%221.1%22%20result%3D%22lit%22%3E%3CfeDistantLight%20azimuth%3D%22225%22%20elevation%3D%2238%22/%3E%3C/feDiffuseLighting%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%220.003125%200.09375%22%20numOctaves%3D%223%22%20seed%3D%223%22%20stitchTiles%3D%22stitch%22%20result%3D%22st%22/%3E%3CfeColorMatrix%20in%3D%22st%22%20type%3D%22matrix%22%20values%3D%220%200%200%200%200.03%20%200%200%200%200%200.05%20%200%200%200%200%200.02%20%200%200%200%20-1.6%201.05%22%20result%3D%22wet%22/%3E%3CfeComposite%20in%3D%22wet%22%20in2%3D%22lit%22%20operator%3D%22over%22/%3E%3C/filter%3E%3Crect%20width%3D%22640%22%20height%3D%22640%22%20fill%3D%22%230b0d0a%22/%3E%3Crect%20width%3D%22640%22%20height%3D%22640%22%20filter%3D%22url%28%23s%29%22%20opacity%3D%22.55%22/%3E%3C/svg%3E"); background-size: 640px 640px; }
+body { min-height: 100%; overflow-x: hidden; }
+
+.damp {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 40%, transparent 0%, rgba(5,6,4,.55) 70%, rgba(3,4,3,.92) 100%),
+    radial-gradient(circle at 20% 15%, rgba(127,157,60,.08), transparent 40%),
+    radial-gradient(circle at 85% 70%, rgba(127,157,60,.06), transparent 45%);
+}
+
+main {
+  position: relative; z-index: 2;
+  max-width: 40rem; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: clamp(3rem, 10vh, 7rem) clamp(4rem, 14vh, 9rem);
+}
+
+.mark {
+  font-family: var(--font-mark); font-style: italic;
+  color: var(--faint); font-size: .95rem; letter-spacing: .14em; text-transform: lowercase;
+  text-align: center; margin: 0 0 clamp(2.5rem, 7vh, 4.5rem);
+}
+
+.message { position: relative; }
+.words { z-index: 1; }
+/* breathing: a blurred glow copy behind the text; only its opacity animates, which the GPU handles cheaply */
+.words.halo {
+  position: absolute; left: 0; top: 0; width: 100%; z-index: 0; pointer-events: none;
+  color: transparent; filter: none;
+  text-shadow: 0 0 10px rgba(242,246,207,.9), 0 0 26px rgba(214,228,140,.85), 0 0 60px rgba(127,157,60,.8);
+  opacity: .25; will-change: opacity;
+  animation: breathe 6s ease-in-out infinite;
+}
+@keyframes breathe { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
+/* motes: a few glowing specks that drift up slowly; transform/opacity only */
+.motes { position: absolute; inset: -40px 0; pointer-events: none; z-index: 2; overflow: hidden; }
+.mote {
+  position: absolute; left: var(--x); top: var(--y);
+  width: var(--s); height: var(--s); border-radius: 50%;
+  background: var(--spore);
+  box-shadow: 0 0 8px 3px rgba(214,228,140,.75), 0 0 18px 6px rgba(127,157,60,.4);
+  opacity: 0; will-change: transform, opacity;
+  animation: drift var(--d) linear var(--delay) infinite;
+}
+@keyframes drift {
+  0%   { transform: translate(0, 0); opacity: 0; }
+  20%  { opacity: 1; }
+  75%  { opacity: .8; }
+  100% { transform: translate(var(--dx), -160px); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .words.halo, .mote { animation: none; } .words.halo { opacity: .5; } }
+.message canvas { position: absolute; left: 0; top: 0; width: 100%; pointer-events: none; filter: drop-shadow(0 0 3px rgba(127,157,60,.9)) drop-shadow(0 0 1px rgba(242,246,207,.6)); }
+.words {
+  position: relative;
+  font-family: var(--font-script);
+  font-size: clamp(1.85rem, 1.2rem + 2.6vw, 2.75rem);
+  line-height: 1.38;
+  color: var(--glow);
+  text-shadow:
+    0 0 1px rgba(242,246,207,.9),
+    0 0 8px rgba(214,228,140,.55),
+    0 0 20px rgba(127,157,60,.45);
+  filter: url(#grow);
+  display: grid; gap: 1.1em;
+}
+.words p { margin: 0; }
+.words p:nth-child(3n+1) { transform: rotate(-.7deg); }
+.words p:nth-child(3n+2) { transform: rotate(.5deg) translateX(.4em); }
+.words p:nth-child(3n)   { transform: rotate(-.2deg) translateX(-.2em); }
+.words .sign { text-align: right; margin-top: .4em; }
+.words s { text-decoration-thickness: .07em; text-decoration-color: var(--glow-deep); }
+/* bracketed letters: glow blue instead of green */
+.words .b {
+  color: var(--blue);
+  text-shadow: 0 0 1px rgba(230,250,244,.95), 0 0 8px rgba(150,226,205,.65), 0 0 20px rgba(80,165,150,.5);
+}
+.words.halo .b {
+  color: transparent;
+  text-shadow: 0 0 10px rgba(230,250,244,.9), 0 0 26px rgba(150,226,205,.8), 0 0 60px rgba(80,165,150,.75);
+}
+
+</style>
+
+
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="grow" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="11" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale="3.5" xChannelSelector="R" yChannelSelector="G"/></filter></svg>
+<div class="damp" aria-hidden="true"></div>
+
+<main>
+
+  <div class="message">
+    <canvas id="vines" aria-hidden="true"></canvas>
+    <div class="words" id="words">
+      <p><span class="b">H</span>ey pretty boy, it’s me, the moss shit on the tower walls. Yeahhhh that’s righttttt, second secret noteeeee. I’v<span class="b">e</span> been on Reddit, so I kinda know the lore of this book now. Hope u like the theme, and that it’s not offensive to the canon or <span class="b">a</span>nything, bc I ain’t reading it.</p>
+      <p>I think about you all day. All night. I can’t walk through Boston without feeling the splendid torment that is your memory. The city was so beautiful for those couple of days. How could I eve<span class="b">r</span> be content without you?</p>
+      <p>Growing up, my mom always told me that when we reach heaven, we’ll see new colors, ones never seen on earth. You are, by far, <span class="b">t</span>he most beautiful color I have ever seen. Boston is so very grey now that you’re gone. Holy cornball. Anyways.</p>
+      <p>I hope you’re doing well as you read this. You seemed to be on cloud nine the week we made things official, but I know you’ve been terribly busy since. I can’t imagine the load <span class="b">y</span>ou’re carrying, but I’m so proud of you for all your hard work, and proud to call you my boyfriend. Even though our relationship has changed, I hope y<span class="b">o</span>u’ll still talk to me when you’re stressed. And if it isn’t me, that’s okay. As long as you’re talking to someone, I’m happy.</p>
+      <p>I care for you so deeply, and I adore you more than you could ever know. I cannot WAIT to see yo<span class="b">u</span> this winter!</p>
+      <p class="sign">- Wall Moss Asher</p>
+    </div>
+  </div>
+</main>
+
+<script>
+(() => {
+  const words = document.getElementById('words');
+  const canvas = document.getElementById('vines');
+  const ctx = canvas.getContext('2d');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  words.querySelectorAll('p').forEach(p => {
+    // wrap words in spans while keeping things like the crossed-out word and line breaks
+    const walk = document.createTreeWalker(p, NodeFilter.SHOW_TEXT);
+    const nodes = []; while (walk.nextNode()) nodes.push(walk.currentNode);
+    nodes.forEach(node => {
+      const frag = document.createDocumentFragment();
+      node.textContent.split(/(\s+)/).forEach(w => {
+        if (!w) return;
+        if (/\S/.test(w)) { const sp = document.createElement('span'); sp.className = 'w'; sp.textContent = w; frag.appendChild(sp); }
+        else frag.appendChild(document.createTextNode(w));
+      });
+      node.replaceWith(frag);
+    });
+  });
+
+  const halo = words.cloneNode(true);
+  halo.removeAttribute('id'); halo.classList.add('halo'); halo.setAttribute('aria-hidden', 'true');
+  words.parentElement.insertBefore(halo, words);
+
+  const motes = document.createElement('div');
+  motes.className = 'motes'; motes.setAttribute('aria-hidden', 'true');
+  const mr = (a, b) => a + Math.random() * (b - a);
+  for (let i = 0; i < 44; i++) {
+    const m = document.createElement('span');
+    m.className = 'mote';
+    m.style.cssText = `--x:${mr(2, 96)}%;--y:${mr(5, 98)}%;--s:${mr(3, 6)}px;--d:${mr(10, 18)}s;--delay:${-mr(0, 18)}s;--dx:${mr(-40, 40)}px`;
+    motes.appendChild(m);
+  }
+  words.parentElement.appendChild(motes);
+
+  const seeded = s => () => (s = (s * 16807) % 2147483647) / 2147483647;
+
+  // grow one vine: droops, wanders, curls tightly at the tip
+  function vine(rng, x, y, a, len, w, depth, out) {
+    const steps = Math.max(6, Math.round(len / 2));
+    let curl = (rng() < .5 ? -1 : 1) * (.02 + rng() * .04);
+    const pts = [[x, y]];
+    for (let i = 0; i < steps; i++) {
+      const f = i / steps;
+      a += (Math.PI / 2 - a) * .02 * (1 - f) + (rng() - .5) * .08;
+      if (f > .65) a += curl * (1 + (f - .65) * 14);
+      x += Math.cos(a) * 2; y += Math.sin(a) * 2;
+      pts.push([x, y]);
+      if (depth < 2 && i > 6 && i < steps * .6 && rng() < .035)
+        vine(rng, x, y, a + (rng() < .5 ? -1 : 1) * (.7 + rng() * .6), len * (.3 + rng() * .3), w * .6, depth + 1, out);
+    }
+    out.push({ pts, w });
+  }
+
+  let vines = [];
+  function build() {
+    const rng = seeded(42);
+    const box = canvas.parentElement.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const H = box.height + 160;
+    canvas.style.height = H + 'px';
+    canvas.width = box.width * dpr; canvas.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.lineCap = 'round';
+    vines = [];
+    const fs = parseFloat(getComputedStyle(words).fontSize);
+    // spread vines evenly through every paragraph, with a little randomness
+    const picked = [];
+    words.querySelectorAll('p').forEach(p => {
+      const ws = [...p.querySelectorAll('.w')];
+      const count = Math.max(2, Math.round(ws.length * .35));
+      const gap = ws.length / count;
+      for (let i = 0; i < count; i++) {
+        const idx = Math.min(ws.length - 1, Math.floor(i * gap + rng() * gap));
+        picked.push(ws[idx]);
+      }
+    });
+    picked.forEach(span => {
+      const r = span.getBoundingClientRect();
+      const x = r.left - box.left + r.width * (.15 + rng() * .7);
+      const y = r.top - box.top + r.height * .74 - 5;
+      const group = [];
+      vine(rng, x, y, Math.PI / 2 + (rng() - .5) * 1.1, fs * (.7 + rng() * 2.4), 1.1 + rng() * 1.4, 0, group);
+      vines.push(group);
+    });
+  }
+
+  function paint(p) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (const group of vines) for (const v of group) {
+      const n = Math.max(1, Math.floor(v.pts.length * p));
+      for (let i = 1; i < n; i++) {
+        const k = 1 - i / v.pts.length;
+        ctx.strokeStyle = `rgba(214,228,140,${.35 + .6 * k})`;
+        ctx.lineWidth = v.w * (.2 + k);
+        ctx.beginPath();
+        ctx.moveTo(v.pts[i - 1][0], v.pts[i - 1][1]);
+        ctx.lineTo(v.pts[i][0], v.pts[i][1]);
+        ctx.stroke();
+      }
+    }
+  }
+
+  function grow() {
+    if (reduce) return paint(1);
+    const t0 = performance.now(), dur = 2600;
+    const step = now => {
+      const p = Math.min(1, (now - t0) / dur);
+      paint(1 - Math.pow(1 - p, 3));
+      if (p < 1) requestAnimationFrame(step);  // stops once grown
+    };
+    requestAnimationFrame(step);
+  }
+
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => { build(); grow(); });
+  let rt, lastW = innerWidth;
+  addEventListener('resize', () => {
+    if (innerWidth === lastW) return;  // ignore mobile toolbar show/hide
+    lastW = innerWidth;
+    clearTimeout(rt); rt = setTimeout(() => { build(); paint(1); }, 200);
+  });
+})();
+</script>
+
+</body>
+</html>
